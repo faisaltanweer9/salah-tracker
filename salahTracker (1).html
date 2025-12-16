@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Islamic Daily Tracker</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .tabs {
+        display: flex;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .tab-button {
+        flex: 1;
+        padding: 15px 20px;
+        background: transparent;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .tab-button.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+
+      .tab-button:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .date-display {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: white;
+        text-align: center;
+      }
+
+      .prayers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .prayer-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        transition: all 0.3s ease;
+      }
+
+      .prayer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+      }
+
+      .prayer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .prayer-name {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #4c63d2;
+      }
+
+      .prayer-time {
+        font-size: 1.1em;
+        color: #666;
+      }
+
+      .prayer-status {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .status-btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .status-btn.prayed {
+        background: #4caf50;
+        color: white;
+      }
+
+      .status-btn.missed {
+        background: #f44336;
+        color: white;
+      }
+
+      .status-btn:not(.prayed):not(.missed) {
+        background: #f0f0f0;
+        color: #666;
+      }
+
+      .status-btn.pending-reset {
+        background: #ccc;
+        color: #333;
+      }
+
+      .status-btn:hover {
+        transform: scale(1.05);
+      }
+
+      .missed-count {
+        text-align: center;
+        color: #f44336;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      }
+
+      .section-title {
+        font-size: 1.5em;
+        color: #4c63d2;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .missed-prayer-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: #fff5f5;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #f44336;
+      }
+
+      .archive-date-header {
+        font-size: 1.2em;
+        color: #4c63d2;
+        padding: 10px 0;
+        margin-top: 20px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .make-up-btn {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .make-up-btn:hover {
+        background: #45a049;
+        transform: scale(1.05);
+      }
+
+      .stats-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(31, 38, 135, 0.2);
+      }
+
+      .stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #4c63d2;
+      }
+
+      .stat-label {
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        margin-bottom: 20px;
+      }
+
+      .calendar-header {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        margin-bottom: 10px;
+      }
+
+      .calendar-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .nav-btn {
+        background: #4c63d2;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .nav-btn:hover {
+        background: #3d52b8;
+      }
+
+      .day-header {
+        background: #4c63d2;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .calendar-day {
+        background: white;
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        min-height: 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .calendar-day:hover {
+        background: #f0f8ff;
+      }
+
+      .calendar-day.other-month {
+        color: #ccc;
+        background: #f9f9f9;
+      }
+
+      .calendar-day.has-missed {
+        background: #ffe6e6;
+        border-color: #f44336;
+      }
+
+      .calendar-day.today {
+        background: #e8f5e8;
+        border-color: #4caf50;
+      }
+
+      .day-number {
+        font-weight: bold;
+        margin-bottom: 2px;
+      }
+
+      .missed-indicator {
+        font-size: 0.8em;
+        color: #f44336;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background: white;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 15px;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: #000;
+      }
+
+      .prayer-checklist {
+        display: grid;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .prayer-check-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 5px;
+      }
+
+      .prayer-check-item select {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+
+      .azkar-section {
+        margin-bottom: 30px;
+      }
+
+      .azkar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .azkar-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .azkar-card.prayed {
+        border: 3px solid #4caf50;
+      }
+
+      .azkar-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #4c63d2;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+
+      .azkar-text {
+        font-size: 1.1em;
+        line-height: 1.8;
+        text-align: right;
+        direction: rtl;
+        margin-bottom: 10px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-right: 4px solid #4c63d2;
+      }
+
+      .azkar-translation {
+        font-size: 0.95em;
+        color: #666;
+        font-style: italic;
+        margin-bottom: 15px;
+      }
+
+      .azkar-note {
+        font-size: 0.9em;
+        color: #4caf50;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: center;
+        padding: 8px;
+        background-color: #f0fff0;
+        border-radius: 5px;
+      }
+
+      .azkar-counter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+      }
+
+      .counter-btn {
+        background: #4c63d2;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .counter-btn.prayed {
+        background: #4caf50;
+      }
+
+      .counter-btn:hover {
+        background: #3d52b8;
+        transform: scale(1.05);
+      }
+
+      .counter-display {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #4c63d2;
+      }
+
+      .istighfar-counter {
+        text-align: center;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 20px;
+      }
+
+      .istighfar-text {
+        font-size: 1.5em;
+        line-height: 1.8;
+        text-align: center;
+        direction: rtl;
+        margin-bottom: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border: 2px solid #4c63d2;
+        border-radius: 10px;
+      }
+
+      .big-counter {
+        font-size: 3em;
+        font-weight: bold;
+        color: #4c63d2;
+        margin: 20px 0;
+      }
+
+      .big-counter-btn {
+        background: #4c63d2;
+        color: white;
+        border: none;
+        padding: 20px 40px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 1.2em;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        margin: 10px;
+      }
+
+      .big-counter-btn:hover {
+        background: #3d52b8;
+        transform: scale(1.05);
+      }
+
+      .reset-btn {
+        background: #ff9800;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        margin: 5px;
+      }
+
+      .reset-btn:hover {
+        background: #f57c00;
+        transform: scale(1.05);
+      }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+      }
+
+      .notification.show {
+        transform: translateX(0);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        .header h1 {
+          font-size: 2em;
+        }
+
+        .prayers-grid,
+        .azkar-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .tabs {
+          flex-wrap: wrap;
+        }
+
+        .tab-button {
+          flex: 1 1 45%;
+        }
+
+        .calendar {
+          font-size: 0.9em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🕌 Daily Salah Tracker</h1>
+        <p>Track your prayers, dhikr, and daily Islamic practices</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('salah')">
+          📿 Today's Salah
+        </button>
+        <button class="tab-button" onclick="switchTab('calendar')">
+          📅 Calendar
+        </button>
+        <button class="tab-button" onclick="switchTab('qada')">
+          📚 Qada Archive
+        </button>
+        <button class="tab-button" onclick="switchTab('istighfar')">
+          🤲 Istighfar
+        </button>
+        <button class="tab-button" onclick="switchTab('azkar')">
+          📖 Daily Azkar
+        </button>
+      </div>
+
+      <div id="salah-tab" class="tab-content active">
+        <div class="date-display">
+          <h2 id="currentDate"></h2>
+        </div>
+
+        <div class="stats-section">
+          <div class="stat-card">
+            <div class="stat-value" id="todayPrayed">0</div>
+            <div class="stat-label">Prayed Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalMissed">0</div>
+            <div class="stat-label">Total Missed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="weeklyPercentage">0%</div>
+            <div class="stat-label">This Week</div>
+          </div>
+        </div>
+
+        <div class="prayers-grid" id="prayersGrid"></div>
+
+        <div class="section">
+          <h2 class="section-title">
+            Missed Prayers to Make Up (Today's Archive)
+          </h2>
+          <div id="missedPrayersList">
+            <p style="text-align: center; color: #666">
+              No missed prayers - Alhamdulillah! 🎉
+            </p>
+          </div>
+        </div>
+
+        <div style="text-align: center">
+          <button class="reset-btn" onclick="resetDay()">
+            Reset Today's Practices
+          </button>
+        </div>
+      </div>
+
+      <div id="calendar-tab" class="tab-content">
+        <div class="section">
+          <h2 class="section-title">
+            Prayer Calendar - Add Previous Missed Prayers
+          </h2>
+          <div class="calendar-nav">
+            <button class="nav-btn" onclick="changeMonth(-1)">
+              ← Previous
+            </button>
+            <h3 id="currentMonth"></h3>
+            <button class="nav-btn" onclick="changeMonth(1)">Next →</button>
+          </div>
+
+          <div class="calendar-header">
+            <div class="day-header">Sun</div>
+            <div class="day-header">Mon</div>
+            <div class="day-header">Tue</div>
+            <div class="day-header">Wed</div>
+            <div class="day-header">Thu</div>
+            <div class="day-header">Fri</div>
+            <div class="day-header">Sat</div>
+          </div>
+
+          <div class="calendar" id="calendar"></div>
+        </div>
+      </div>
+
+      <!-- NEW Qada Archive Tab -->
+      <div id="qada-tab" class="tab-content">
+        <div class="section">
+          <h2 class="section-title">
+            📚 Qada Prayer Archive (Total Missed:
+            <span id="totalMissedArchive">0</span>)
+          </h2>
+          <p style="color: #666; text-align: center; margin-bottom: 20px">
+            Use the "Made Up (Remove)" button to permanently remove a prayer
+            from the Qada debt list.
+          </p>
+          <div id="qadaArchiveList">
+            <p style="text-align: center; color: #666">
+              The full history of missed prayers will appear here.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="istighfar-tab" class="tab-content">
+        <div class="istighfar-counter section">
+          <h2 class="section-title">Daily Istighfar Counter</h2>
+          <div class="istighfar-text">
+            أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ
+            الْحَيُّ الْقَيּُومُ وَأَتُوبُ إِلَيْهِ
+          </div>
+          <p style="font-style: italic; color: #666; margin-bottom: 20px">
+            "I seek forgiveness from Allah the Mighty, whom there is no god but
+            He, the Living, the Eternal, and I repent to Him"
+          </p>
+
+          <div class="big-counter" id="istighfarCount">0</div>
+          <div>
+            <button class="big-counter-btn" onclick="incrementIstighfar()">
+              Say Istighfar
+            </button>
+            <button class="reset-btn" onclick="resetIstighfar()">
+              Reset Count
+            </button>
+          </div>
+          <p style="margin-top: 15px; color: #666">
+            Today's Goal:
+            <span style="color: #4c63d2; font-weight: bold">100 times</span>
+          </p>
+        </div>
+      </div>
+
+      <div id="azkar-tab" class="tab-content">
+        <div class="azkar-section">
+          <h2 class="section-title">Morning Azkar (أذكار الصباح)</h2>
+          <div class="azkar-grid" id="morningAzkar"></div>
+        </div>
+
+        <div class="azkar-section">
+          <h2 class="section-title">Evening Azkar (أذكار المساء)</h2>
+          <div class="azkar-grid" id="eveningAzkar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dayModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeDayModal()">&times;</span>
+        <h2 id="modalDate"></h2>
+        <p>Select missed/prayed status for this day:</p>
+        <div class="prayer-checklist" id="modalPrayers"></div>
+        <div style="text-align: center; margin-top: 20px">
+          <button class="counter-btn" onclick="saveDayPrayers()">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+      const prayers = [
+        { name: "Fajr", time: "05:30" },
+        { name: "Dhuhr", time: "12:30" },
+        { name: "Asr", time: "15:45" },
+        { name: "Maghrib", time: "18:15" },
+        { name: "Isha", time: "19:45" },
+      ];
+
+      // --- UPDATED MORNING AZKAR DATA ---
+      const morningAzkarData = [
+        {
+          id: "m_a1",
+          name: "Ayat al-Kursi",
+          arabic:
+            "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+          translation:
+            "Allāhu lā ilāha illā huwa al-ḥayyul-qayyūm... (Surah Al-Baqarah, 2:255)",
+          note: "Recite 1 time. Protection from morning until evening. (Sahih Muslim)",
+          goal: 1,
+        },
+        {
+          id: "m_a2",
+          name: "Surah Ikhlās, Falaq, Nās",
+          arabic:
+            "قُلْ هُوَ اللَّهُ أَحَدٌ / قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ / قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
+          translation:
+            "Recite the last three Surahs (Al-Ikhlās, Al-Falaq, and An-Nās)",
+          note: "Recite 3 times each. Complete protection from evil. (Tirmidhi)",
+          goal: 3,
+        },
+        {
+          id: "m_a3",
+          name: "Tasbīh of Forgiveness",
+          arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+          translation: "Subḥānallāhi wa biḥamdih.",
+          note: "Recite 100 times. All sins forgiven even if like the foam of the sea. (Sahih Bukhari)",
+          goal: 100,
+        },
+        {
+          id: "m_a4",
+          name: "Kalimat al-Tawḥīd",
+          arabic:
+            "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+          translation:
+            "Lā ilāha illallāhu waḥdahu lā sharīka lahu... (100 times)",
+          note: "Recite 100 times. Reward like freeing ten slaves; protection from shayṭān all day. (Bukhari, Muslim)",
+          goal: 100,
+        },
+        {
+          id: "m_a5",
+          name: "Morning Declaration of Faith",
+          arabic:
+            "اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ، لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ",
+          translation: "Allāhumma innī aṣbaḥtu ush-hiduka... (4 times)",
+          note: "Recite 4 times. Declaration of faith and protection. (Abu Dawood)",
+          goal: 4,
+        },
+        {
+          id: "m_a6",
+          name: "Dua of Gratitude",
+          arabic:
+            "اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
+          translation:
+            "Allāhumma mā aṣbaḥa bī min niʿmatin fa minka... (Recite once)",
+          note: "Recite 1 time. Expresses gratitude for all blessings. (Abu Dawood)",
+          goal: 1,
+        },
+        {
+          id: "m_a7",
+          name: "Dua for Relief from Worry",
+          arabic:
+            "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ، وَأَعُوذُ بِكَ مِنَ الْجُبْنِ وَالْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ",
+          translation:
+            "Allāhumma innī aʿūdhu bika min al-hammi wal-ḥazan... (Recite once)",
+          note: "Recite 1 time. Protection from sadness, debt, and oppression. (Bukhari)",
+          goal: 1,
+        },
+        {
+          id: "m_a8",
+          name: "Surah Al-Baqarah End",
+          arabic:
+            "آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِنْ رَبِّهِ... (الآيتان الأخيرتان)",
+          translation:
+            "Āmana-r-rasūlu bimā unzila ilayhi... (Last two verses of Surah 2)",
+          note: "Recite 1 time. Sufficient protection for the whole day and night. (Bukhari, Muslim)",
+          goal: 1,
+        },
+        {
+          id: "m_a9",
+          name: "Dua for Health and Provision",
+          arabic:
+            "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ",
+          translation: "Allāhumma ʿāfinī fī badanī... (Recite 3 times)",
+          note: "Recite 3 times. For health, protection, and sustenance. (Abu Dawood)",
+          goal: 3,
+        },
+        {
+          id: "m_a10",
+          name: "Ḥasbiyallāhu (Sufficiency)",
+          arabic:
+            "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+          translation: "Ḥasbiyallāhu lā ilāha illā huwa... (Recite 7 times)",
+          note: "Recite 7 times. Allah will suffice him for whatever concerns him of the matter of this world and the Hereafter. (Abu Dawood)",
+          goal: 7,
+        },
+        {
+          id: "m_a11",
+          name: "Astaghfirullāh (General)",
+          arabic: "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ",
+          translation: "Astaghfirullāh wa atūbu ilayh. (Recite 100 times)",
+          note: "Recite 100 times. Seeking general forgiveness.",
+          goal: 100,
+        },
+      ];
+
+      // --- UPDATED EVENING AZKAR DATA ---
+      const eveningAzkarData = [
+        {
+          id: "e_a1",
+          name: "Ayat al-Kursi",
+          arabic:
+            "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+          translation:
+            "Allāhu lā ilāha illā huwa al-ḥayyul-qayyūm... (Surah Al-Baqarah, 2:255)",
+          note: "Recite 1 time. Protection for the entire night. (Sahih Muslim)",
+          goal: 1,
+        },
+        {
+          id: "e_a2",
+          name: "Surah Ikhlās, Falaq, Nās",
+          arabic:
+            "قُلْ هُوَ اللَّهُ أَحَدٌ / قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ / قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
+          translation:
+            "Recite the last three Surahs (Al-Ikhlās, Al-Falaq, and An-Nās)",
+          note: "Recite 3 times each. Protection from all harm until morning. (Tirmidhi)",
+          goal: 3,
+        },
+        {
+          id: "e_a3",
+          name: "Evening Declaration of Faith",
+          arabic:
+            "اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ، لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ",
+          translation: "Allāhumma innī amsaytu ush-hiduka... (4 times)",
+          note: "Recite 4 times. Declaration of faith and protection. (Abu Dawood)",
+          goal: 4,
+        },
+        {
+          id: "e_a4",
+          name: "Dua for protection from harm",
+          arabic:
+            "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+          translation: "Bismillāhillaẖī lā yaḍurru maʿasmihi... (3 times)",
+          note: "Recite 3 times. Nothing harmful will affect you. (Abu Dawood, Tirmidhi)",
+          goal: 3,
+        },
+        {
+          id: "e_a5",
+          name: "Dua for protection from evil beings",
+          arabic:
+            "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+          translation:
+            "Aʿūdhu bikalimātillāhi-t-tāmmāti min sharri mā khalaq. (3 times)",
+          note: "Recite 3 times. Protection from jinn, evil, and harm. (Muslim)",
+          goal: 3,
+        },
+        {
+          id: "e_a6",
+          name: "Dua for protection & light",
+          arabic:
+            "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ، وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، وَاحْفَظْنِي مِنْ بَيْنِ يَدَيَّ وَمِنْ خَلْفِي، وَعَنْ يَمِينِي وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي",
+          translation:
+            "Allāhumma innī as’alukal-ʿafwa wal-ʿāfiyah... (Recite once)",
+          note: "Recite 1 time. Protection, safety, and well-being in both worlds. (Abu Dawood, Ibn Majah)",
+          goal: 1,
+        },
+        {
+          id: "e_a7",
+          name: "Tasbīh, Taḥmīd, Takbīr (Before Sleep)",
+          arabic:
+            "سُبْحَانَ اللَّهِ (٣٣) ، الْحَمْدُ لِلَّهِ (٣٣) ، اللَّهُ أَكْبَرُ (٣٤)",
+          translation:
+            "Subḥānallāh (33), Alḥamdulillāh (33), Allāhu Akbar (34)",
+          note: "Recite 100 total times before sleep. Brings peace, strength, and reward. (Bukhari, Muslim)",
+          goal: 100,
+        },
+        {
+          id: "e_a8",
+          name: "Closing Duʿā (Before Sleep)",
+          arabic: "اللَّهُمَّ بِاسْمِكَ أَحْيَا وَبِاسْمِكَ أَمُوتُ",
+          translation: "Allāhumma bismika aḥyā wa bismika amūt.",
+          note: "Recite 1 time before sleep. “O Allah, in Your name I live and die.” (Bukhari)",
+          goal: 1,
+        },
+      ];
+
+      let prayerData = {};
+      let missedPrayers = [];
+      let istighfarCount = 0;
+      let azkarCounters = {};
+      let currentCalendarDate = new Date();
+      let selectedCalendarDay = null; // Stores the Date object of the day being viewed/edited
+
+      // --- Success Feedback Function (Updated for Vibration) ---
+      function playSuccessFeedback() {
+        // 1. Device Vibration (Only runs on supported mobile devices/browsers)
+        if (navigator.vibrate) {
+          // Vibrate pattern: 100ms on, 50ms off, 100ms on (double tap)
+          navigator.vibrate([100, 50, 100]);
+        }
+
+        // 2. Sound Effect
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+
+        const audioCtx = new AudioContext();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        // Configuration for a pleasing chime sound (A5 note)
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+
+        // Volume and quick decay
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.3); // Play for 0.3 seconds
+      }
+      // ------------------------------------
+
+      function loadData() {
+        const data = {
+          prayers: JSON.parse(
+            localStorage.getItem("islamicTracker_prayers") || "{}"
+          ),
+          missed: JSON.parse(
+            localStorage.getItem("islamicTracker_missed") || "[]"
+          ),
+          istighfar: parseInt(
+            localStorage.getItem("islamicTracker_istighfar") || "0"
+          ),
+          azkar: JSON.parse(
+            localStorage.getItem("islamicTracker_azkar") || "{}"
+          ),
+        };
+
+        prayerData = data.prayers;
+        missedPrayers = data.missed.sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        ); // Sort by date
+        istighfarCount = data.istighfar;
+        azkarCounters = data.azkar;
+
+        initializeDay();
+        renderAll();
+      }
+
+      function initializeDay() {
+        const today = new Date().toDateString();
+        if (!prayerData[today]) {
+          prayerData[today] = {};
+          prayers.forEach((prayer) => {
+            prayerData[today][prayer.name] = "pending";
+          });
+        }
+        // Initialize Azkar counters for the day if they don't exist
+        const azkarTodayKey = `azkar_${today}`;
+        if (!azkarCounters[azkarTodayKey]) {
+          azkarCounters[azkarTodayKey] = {};
+          [...morningAzkarData, ...eveningAzkarData].forEach((azkar) => {
+            azkarCounters[azkarTodayKey][azkar.id] = 0;
+          });
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem(
+          "islamicTracker_prayers",
+          JSON.stringify(prayerData)
+        );
+        localStorage.setItem(
+          "islamicTracker_missed",
+          JSON.stringify(missedPrayers)
+        );
+        localStorage.setItem(
+          "islamicTracker_istighfar",
+          istighfarCount.toString()
+        );
+        localStorage.setItem(
+          "islamicTracker_azkar",
+          JSON.stringify(azkarCounters)
+        );
+      }
+
+      function showNotification(message) {
+        const notification = document.getElementById("notification");
+        notification.textContent = message;
+        notification.classList.add("show");
+        setTimeout(() => notification.classList.remove("show"), 3000);
+      }
+
+      function renderAll() {
+        const today = new Date();
+        document.getElementById(
+          "currentDate"
+        ).textContent = `Today: ${today.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}`;
+        renderPrayers();
+        renderMissedPrayers();
+        updateStats();
+        updateIstighfarDisplay();
+        renderAzkar();
+      }
+
+      function switchTab(tabName) {
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((tab) => tab.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-button")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.getElementById(tabName + "-tab").classList.add("active");
+
+        // Find the button that was clicked or is associated with the tabName
+        const targetButton = document.querySelector(
+          `.tab-button[onclick*="switchTab('${tabName}')"]`
+        );
+        if (targetButton) {
+          targetButton.classList.add("active");
+        }
+
+        if (tabName === "calendar") renderCalendar();
+        else if (tabName === "qada") renderQadaArchive();
+        else if (tabName === "azkar") renderAzkar();
+        else if (tabName === "istighfar") updateIstighfarDisplay();
+        else if (tabName === "salah") renderAll();
+      }
+
+      function updatePrayerStatus(prayerName, status) {
+        const today = new Date().toDateString();
+        const oldStatus = prayerData[today][prayerName];
+        prayerData[today][prayerName] = status;
+
+        // Remove from missed if it was missed and is now prayed or pending
+        if (oldStatus === "missed") {
+          missedPrayers = missedPrayers.filter(
+            (mp) => !(mp.name === prayerName && mp.date === today)
+          );
+        }
+
+        // Add to missed if status is 'missed' and it wasn't before
+        if (status === "missed") {
+          missedPrayers.push({
+            name: prayerName,
+            date: today,
+            time: prayers.find((p) => p.name === prayerName).time,
+            id: `${today}_${prayerName}`,
+          });
+          showNotification(
+            `${prayerName} marked as missed. Don't forget to make it up later.`
+          );
+        } else if (status === "prayed") {
+          showNotification(`${prayerName} completed - Barakallahu feek! 🤲`);
+        } else {
+          showNotification(`${prayerName} status reset to pending.`);
+        }
+
+        saveData();
+        renderAll();
+      }
+
+      function makeUpPrayer(id) {
+        missedPrayers = missedPrayers.filter((mp) => mp.id !== id);
+        showNotification(`Prayer made up - May Allah accept it! 🤲`);
+        saveData();
+        renderAll();
+        renderQadaArchive(); // Update archive if open
+      }
+
+      function renderPrayers() {
+        const grid = document.getElementById("prayersGrid");
+        const today = new Date().toDateString();
+        // Ensure today's data is initialized before rendering
+        if (!prayerData[today]) initializeDay();
+
+        grid.innerHTML = prayers
+          .map((prayer) => {
+            const status = prayerData[today][prayer.name] || "pending";
+            const missedCount = missedPrayers.filter(
+              (mp) => mp.name === prayer.name
+            ).length;
+            const statusClass =
+              status === "prayed"
+                ? "prayed"
+                : status === "missed"
+                ? "missed"
+                : "";
+
+            return `
+            <div class="prayer-card">
+              <div class="prayer-header">
+                <div class="prayer-name">${prayer.name}</div>
+                <div class="prayer-time">${prayer.time}</div>
+              </div>
+              <div class="prayer-status">
+                <button class="status-btn ${
+                  status === "prayed" ? "prayed" : ""
+                }"
+                        onclick="updatePrayerStatus('${
+                          prayer.name
+                        }', 'prayed')">
+                  ✅ Prayed
+                </button>
+                <button class="status-btn ${
+                  status === "missed" ? "missed" : ""
+                }"
+                        onclick="updatePrayerStatus('${
+                          prayer.name
+                        }', 'missed')">
+                  ❌ Missed
+                </button>
+                 <button class="status-btn ${
+                   status === "pending" ? "" : "pending-reset"
+                 }"
+                        onclick="updatePrayerStatus('${
+                          prayer.name
+                        }', 'pending')"
+                        style="background: #ccc; color: #333;">
+                  ⚪ Reset
+                </button>
+              </div>
+              ${
+                missedCount > 0
+                  ? `<div class="missed-count">${missedCount} missed to make up</div>`
+                  : ""
+              }
+            </div>
+          `;
+          })
+          .join("");
+      }
+
+      function renderMissedPrayers() {
+        // This renders the list on the TODAY'S SALAH tab
+        const container = document.getElementById("missedPrayersList");
+        const today = new Date().toDateString();
+
+        // Filter out today's missed prayers
+        const todayMissed = missedPrayers.filter((mp) => mp.date === today);
+
+        if (todayMissed.length === 0) {
+          container.innerHTML =
+            '<p style="text-align: center; color: #666;">No missed prayers today - Alhamdulillah! 🎉</p>';
+          return;
+        }
+
+        container.innerHTML = todayMissed
+          .map(
+            (prayer) => `
+          <div class="missed-prayer-item">
+            <div>
+              <strong>${prayer.name}</strong><br>
+              <small>${new Date(prayer.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })} at ${prayer.time}</small>
+            </div>
+            <!-- Note: makeUpPrayer here applies to this specific day's instance -->
+            <button class="make-up-btn" onclick="makeUpPrayer('${prayer.id}')">
+              Make Up Prayer
+            </button>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      function renderQadaArchive() {
+        // This renders the list on the QADA ARCHIVE tab
+        const container = document.getElementById("qadaArchiveList");
+        const totalMissed = missedPrayers.length;
+        document.getElementById("totalMissedArchive").textContent = totalMissed;
+
+        if (totalMissed === 0) {
+          container.innerHTML =
+            '<p style="text-align: center; color: #666;">No missed prayers in the archive - Alhamdulillah! 🎉</p>';
+          return;
+        }
+
+        // Group by date for better readability in the archive
+        const groupedPrayers = missedPrayers.reduce((acc, mp) => {
+          const date = new Date(mp.date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          });
+          if (!acc[date]) {
+            acc[date] = [];
+          }
+          acc[date].push(mp);
+          return acc;
+        }, {});
+
+        // Sort dates chronologically
+        const sortedDates = Object.keys(groupedPrayers).sort(
+          (a, b) => new Date(a) - new Date(b)
+        );
+
+        let html = "";
+        sortedDates.forEach((date) => {
+          const dayPrayers = groupedPrayers[date];
+          html += `<h4 class="archive-date-header">📅 ${date} (${dayPrayers.length} prayers)</h4>`;
+
+          dayPrayers.forEach((prayer) => {
+            html += `
+                    <div class="missed-prayer-item">
+                        <div>
+                            <strong>${prayer.name}</strong><br>
+                            <small>Scheduled at ${prayer.time}</small>
+                        </div>
+                        <button class="make-up-btn" onclick="makeUpPrayer('${prayer.id}')">
+                            Made Up (Remove)
+                        </button>
+                    </div>
+                `;
+          });
+        });
+
+        container.innerHTML = html;
+      }
+
+      function updateStats() {
+        const today = new Date().toDateString();
+        const todayPrayed = Object.values(prayerData[today] || {}).filter(
+          (s) => s === "prayed"
+        ).length;
+        const totalMissed = missedPrayers.length;
+
+        document.getElementById("todayPrayed").textContent = todayPrayed;
+        document.getElementById("totalMissed").textContent = totalMissed;
+
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        let weeklyPrayed = 0;
+        let weeklyTotal = 0;
+        const todayDate = new Date();
+
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(weekStart);
+          date.setDate(weekStart.getDate() + i);
+          const dateStr = date.toDateString();
+
+          // Only count up to and including today
+          if (date <= todayDate) {
+            if (prayerData[dateStr]) {
+              const dayPrayed = Object.values(prayerData[dateStr]).filter(
+                (s) => s === "prayed"
+              ).length;
+              weeklyPrayed += dayPrayed;
+              weeklyTotal += 5;
+            } else {
+              // If a day is missing data, assume 0 prayed for a realistic weekly %
+              weeklyTotal += 5;
+            }
+          }
+        }
+
+        const weeklyPercentage =
+          weeklyTotal > 0 ? Math.round((weeklyPrayed / weeklyTotal) * 100) : 0;
+        document.getElementById(
+          "weeklyPercentage"
+        ).textContent = `${weeklyPercentage}%`;
+      }
+
+      function resetDay() {
+        const today = new Date().toDateString();
+        // Remove today's entries from missedPrayers
+        missedPrayers = missedPrayers.filter((mp) => mp.date !== today);
+
+        // Reset today's prayerData
+        prayerData[today] = {};
+        prayers.forEach((prayer) => {
+          prayerData[today][prayer.name] = "pending";
+        });
+
+        // Reset today's Istighfar
+        istighfarCount = 0;
+
+        // Reset today's Azkar counters
+        const azkarTodayKey = `azkar_${today}`;
+        azkarCounters[azkarTodayKey] = {};
+        [...morningAzkarData, ...eveningAzkarData].forEach((azkar) => {
+          azkarCounters[azkarTodayKey][azkar.id] = 0;
+        });
+
+        saveData();
+        renderAll();
+        showNotification(
+          "Today's practices (prayers, Istighfar, and Azkar) have been reset."
+        );
+      }
+
+      /* --- Calendar Functions --- */
+
+      function renderCalendar() {
+        const monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+        const today = new Date().toDateString();
+
+        document.getElementById(
+          "currentMonth"
+        ).textContent = `${monthNames[month]} ${year}`;
+        const calendarEl = document.getElementById("calendar");
+        calendarEl.innerHTML = "";
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const startDay = firstDayOfMonth.getDay(); // 0 for Sunday, 6 for Saturday
+
+        // Previous month's days to fill the grid
+        for (let i = 0; i < startDay; i++) {
+          const dayEl = document.createElement("div");
+          dayEl.classList.add("calendar-day", "other-month");
+          calendarEl.appendChild(dayEl);
+        }
+
+        // Current month's days
+        for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+          const date = new Date(year, month, day);
+          const dateStr = date.toDateString();
+          const dayEl = document.createElement("div");
+          dayEl.classList.add("calendar-day");
+          dayEl.innerHTML = `<div class="day-number">${day}</div>`;
+          dayEl.dataset.date = dateStr;
+          dayEl.onclick = () => openDayModal(date);
+
+          // Check for missed prayers on this day
+          const missedOnDay = missedPrayers.filter(
+            (mp) => mp.date === dateStr
+          ).length;
+          if (missedOnDay > 0) {
+            dayEl.classList.add("has-missed");
+            dayEl.innerHTML += `<div class="missed-indicator">❌ ${missedOnDay}</div>`;
+          }
+
+          // Highlight today
+          if (dateStr === today) {
+            dayEl.classList.add("today");
+          }
+          // Disable future dates
+          if (date > new Date()) {
+            dayEl.style.pointerEvents = "none";
+            dayEl.style.backgroundColor = "#f0f0f0";
+            dayEl.style.opacity = "0.5";
+          }
+
+          calendarEl.appendChild(dayEl);
+        }
+      }
+
+      function changeMonth(direction) {
+        currentCalendarDate.setMonth(
+          currentCalendarDate.getMonth() + direction
+        );
+        renderCalendar();
+      }
+
+      /* --- Modal Functions --- */
+
+      function openDayModal(date) {
+        const dateStr = date.toDateString();
+        selectedCalendarDay = date; // Store the date
+
+        // Ensure data for the selected day exists before opening the modal
+        if (!prayerData[dateStr]) {
+          prayerData[dateStr] = {};
+          prayers.forEach((prayer) => {
+            prayerData[dateStr][prayer.name] = "pending";
+          });
+        }
+
+        document.getElementById("modalDate").textContent =
+          date.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        document.getElementById("dayModal").style.display = "block";
+
+        const modalPrayersEl = document.getElementById("modalPrayers");
+        modalPrayersEl.innerHTML = "";
+
+        // The modal allows you to see the status of all five prayers (Fajr, Dhuhr, Asr, Maghrib, Isha)
+        prayers.forEach((prayer) => {
+          const currentStatus = prayerData[dateStr][prayer.name] || "pending";
+          const selectId = `status-${prayer.name}`;
+
+          modalPrayersEl.innerHTML += `
+            <div class="prayer-check-item">
+              <strong>${prayer.name}</strong>
+              <select id="${selectId}">
+                <option value="prayed" ${
+                  currentStatus === "prayed" ? "selected" : ""
+                }>✅ Prayed</option>
+                <option value="missed" ${
+                  currentStatus === "missed" ? "selected" : ""
+                }>❌ Missed</option>
+                <option value="pending" ${
+                  currentStatus === "pending" ? "selected" : ""
+                }>⚪ Pending/Not Tracked</option>
+              </select>
+            </div>
+          `;
+        });
+      }
+
+      function closeDayModal() {
+        document.getElementById("dayModal").style.display = "none";
+        selectedCalendarDay = null;
+      }
+
+      function saveDayPrayers() {
+        if (!selectedCalendarDay) return;
+
+        const dateStr = selectedCalendarDay.toDateString();
+
+        prayers.forEach((prayer) => {
+          const selectId = `status-${prayer.name}`;
+          const selectEl = document.getElementById(selectId);
+          if (selectEl) {
+            const newStatus = selectEl.value;
+            const oldStatus = prayerData[dateStr][prayer.name];
+            prayerData[dateStr][prayer.name] = newStatus;
+
+            const prayerId = `${dateStr}_${prayer.name}`;
+
+            // Remove from missed if it was missed and is now prayed or pending
+            if (oldStatus === "missed") {
+              missedPrayers = missedPrayers.filter((mp) => mp.id !== prayerId);
+            }
+
+            // Add to missed if status is 'missed' and it wasn't before
+            if (newStatus === "missed") {
+              // Prevent duplicates if already added from the 'salah' tab
+              if (!missedPrayers.some((mp) => mp.id === prayerId)) {
+                missedPrayers.push({
+                  name: prayer.name,
+                  date: dateStr,
+                  time: prayer.time,
+                  id: prayerId,
+                });
+              }
+            }
+          }
+        });
+
+        saveData();
+        closeDayModal();
+        renderAll();
+        renderCalendar(); // Refresh calendar to show missed indicators
+        showNotification(`Prayer data saved for ${dateStr}!`);
+      }
+
+      /* --- Istighfar Functions --- */
+
+      function updateIstighfarDisplay() {
+        document.getElementById("istighfarCount").textContent = istighfarCount;
+      }
+
+      function incrementIstighfar() {
+        istighfarCount++;
+        updateIstighfarDisplay();
+        saveData();
+        if (istighfarCount === 100) {
+          showNotification("Masha'Allah! You reached your Istighfar goal! 🎉");
+          playSuccessFeedback(); // Play success feedback
+        }
+      }
+
+      function resetIstighfar() {
+        istighfarCount = 0;
+        updateIstighfarDisplay();
+        saveData();
+        showNotification("Istighfar count reset to 0.");
+      }
+
+      /* --- Azkar Functions --- */
+
+      function renderAzkar() {
+        const today = new Date().toDateString();
+        const azkarTodayKey = `azkar_${today}`;
+
+        const renderAzkarSection = (data, containerId) => {
+          const container = document.getElementById(containerId);
+          container.innerHTML = data
+            .map((azkar) => {
+              const currentCount =
+                (azkarCounters[azkarTodayKey] &&
+                  azkarCounters[azkarTodayKey][azkar.id]) ||
+                0;
+              const progressClass = currentCount >= azkar.goal ? "prayed" : "";
+              const buttonText =
+                currentCount >= azkar.goal
+                  ? "Goal Reached! (Reset)"
+                  : "Count +1";
+
+              return `
+                    <div class="azkar-card ${progressClass}">
+                        <div class="azkar-title">${azkar.name}</div>
+                        <div class="azkar-note">${azkar.note}</div>
+                        <div class="azkar-text">${azkar.arabic}</div>
+                        <div class="azkar-translation">${azkar.translation}</div>
+                        <div class="azkar-counter">
+                            <button class="counter-btn ${progressClass}" onclick="incrementAzkar('${azkar.id}', ${azkar.goal})">
+                                ${buttonText}
+                            </button>
+                            <div class="counter-display" id="azkarCount-${azkar.id}">
+                                ${currentCount} / ${azkar.goal}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .join("");
+        };
+
+        renderAzkarSection(morningAzkarData, "morningAzkar");
+        renderAzkarSection(eveningAzkarData, "eveningAzkar");
+      }
+
+      function incrementAzkar(azkarId, goal) {
+        const today = new Date().toDateString();
+        const azkarTodayKey = `azkar_${today}`;
+
+        if (!azkarCounters[azkarTodayKey]) initializeDay(); // Initialize if not present
+
+        let currentCount = azkarCounters[azkarTodayKey][azkarId] || 0;
+
+        if (currentCount >= goal) {
+          // If goal is reached, reset on click
+          azkarCounters[azkarTodayKey][azkarId] = 0;
+          showNotification("Azkar count reset!");
+        } else {
+          // Increment
+          azkarCounters[azkarTodayKey][azkarId] = currentCount + 1;
+          if (currentCount + 1 === goal) {
+            showNotification("Masha'Allah! Azkar goal reached! 🎉");
+            playSuccessFeedback(); // Play success feedback
+          }
+        }
+
+        saveData();
+        renderAzkar(); // Re-render the azkar section to update the counter and button text
+      }
+
+      // Initial load and render
+      window.onload = loadData;
+
+      // Ensure modal closes when clicking outside of it
+      window.onclick = function (event) {
+        const dayModal = document.getElementById("dayModal");
+        if (event.target == dayModal) {
+          closeDayModal();
+        }
+      };
+    </script>
+  </body>
+</html>
